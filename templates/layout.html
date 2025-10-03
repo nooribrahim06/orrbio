@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta charset="UTF-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Orbio{% endblock %}</title>
+    </head>
+    <body>
+      <nav>
+        <div>
+            <a href="/">LOGO</a>
+            <a href="/safety">SAFETY</a>
+            <a href="/investment">Investment</a>
+            <a href="/education">Education</a>
+        </div>
+      </nav>
+      {% block content %}{% endblock %}
+      <footer>
+        <div>
+          <p>Slogan Here</p>
+          <div>
+            <a>FAcebook</a>
+            <a>Instagram</a>
+            <a>Twitter</a>
+        </div>
+      </footer>
+    </body>
+</html>
