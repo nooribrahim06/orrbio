@@ -298,3 +298,15 @@ def form():
 @app.route("/education")
 def education():
     return render_template("education.html")
+
+@app.route("/game")
+def game():
+    return render_template("game.html")
+
+@app.route("/adventure")
+def adventure():
+    return render_template("adventure.html")
+
+
+
+
