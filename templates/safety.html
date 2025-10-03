@@ -1,12 +1,154 @@
 {% extends "layout.html" %}
 {% set active_page = 'safety' %}
-{% block title %}Safety{% endblock %}
+{% block title %}Orbio - Safety{% endblock %}
 
 {% block content %}
 <section>
-    <!--here's section 1 where we will calculate collision risk analyzer-->
+  <h2>Safety</h2>
+  <h2>See satellites and debris in real time — awareness that keeps orbit safer</h2>
+
+<div>
+  <div>
+    <h2>🚀 Collision Risk Analyzer (LEO)</h2>
+    <p>Enter state vectors for both objects. We’ll estimate closest approach and risk.</p>
+
+    <form method="POST" action="{{ url_for('safety') }}" id="riskForm" novalidate>
+      <div>
+        <div>
+          <div>📡 Satellite — State Vector</div>
+          <div>
+            <div>
+              <label for="sat_x">X</label>
+              <div>
+                <input id="sat_x" name="sat_x" type="number" step="any" required value="{{ request.form.get('sat_x', 7000) }}">
+                <span>km</span>
+              </div>
+            </div>
+            <div>
+              <label for="sat_y">Y</label>
+              <div>
+                <input id="sat_y" name="sat_y" type="number" step="any" required value="{{ request.form.get('sat_y', 2000) }}">
+                <span>km</span>
+              </div>
+            </div>
+            <div>
+              <label for="sat_z">Z</label>
+              <div>
+                <input id="sat_z" name="sat_z" type="number" step="any" required value="{{ request.form.get('sat_z', 1300) }}">
+                <span>km</span>
+              </div>
+            </div>
+
+            <div>
+              <label for="sat_vx">Vx</label>
+              <div>
+                <input id="sat_vx" name="sat_vx" type="number" step="any" required value="{{ request.form.get('sat_vx', 1) }}">
+                <span>km/s</span>
+              </div>
+            </div>
+            <div>
+              <label for="sat_vy">Vy</label>
+              <div>
+                <input id="sat_vy" name="sat_vy" type="number" step="any" required value="{{ request.form.get('sat_vy', 7) }}">
+                <span>km/s</span>
+              </div>
+            </div>
+            <div>
+              <label for="sat_vz">Vz</label>
+              <div>
+                <input id="sat_vz" name="sat_vz" type="number" step="any" required value="{{ request.form.get('sat_vz', 2) }}">
+                <span>km/s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Debris -->
+        <div>
+          <div>🛰 Debris — State Vector</div>
+          <div>
+            <div>
+              <label for="deb_x">X</label>
+              <div>
+                <input id="deb_x" name="deb_x" type="number" step="any" required value="{{ request.form.get('deb_x', 7020) }}">
+                <span>km</span>
+              </div>
+            </div>
+            <div>
+              <label for="deb_y">Y</label>
+              <div>
+                <input id="deb_y" name="deb_y" type="number" step="any" required value="{{ request.form.get('deb_y', 1995) }}">
+                <span>km</span>
+              </div>
+            </div>
+            <div>
+              <label for="deb_z">Z</label>
+              <div>
+                <input id="deb_z" name="deb_z" type="number" step="any" required value="{{ request.form.get('deb_z', 1305) }}">
+                <span>km</span>
+              </div>
+            </div>
+
+            <div>
+              <label for="deb_vx">Vx</label>
+              <div>
+                <input id="deb_vx" name="deb_vx" type="number" step="any" required value="{{ request.form.get('deb_vx', 1) }}">
+                <span>km/s</span>
+              </div>
+            </div>
+            <div>
+              <label for="deb_vy">Vy</label>
+              <div>
+                <input id="deb_vy" name="deb_vy" type="number" step="any" required value="{{ request.form.get('deb_vy', 6.8) }}">
+                <span>km/s</span>
+              </div>
+            </div>
+            <div>
+              <label for="deb_vz">Vz</label>
+              <div>
+                <input id="deb_vz" name="deb_vz" type="number" step="any" required value="{{ request.form.get('deb_vz', 2.1) }}">
+                <span>km/s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+        <button type="submit">🔍 Analyze</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+
+    {% if result %}
+    <div>
+      <h3>📊 Results</h3>
+      <table>
+        <tr><th>Closest Distance</th><td>{{ result.min_dist }} km</td></tr>
+        <tr><th>Time of Closest Approach</th><td>{{ result.time_of_min }} minutes</td></tr>
+        <tr><th>Risk Evaluation</th><td>{{ result.risk }}</td></tr>
+        <tr><th>Threat Level</th><td>{{ result.risk_percentage }} %</td></tr>
+      </table>
+      <div>
+        <div id="progress-bar">
+          {{ result.risk_percentage }}%
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<br>
+
 </section>
-<section>
-    <!--Here where we gonna show the debris map-->
-</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function(){
+    const bar=document.getElementById('progress-bar');
+    if(bar){ const pct=parseFloat(bar.textContent)||0; requestAnimationFrame(()=>{ bar.style.width=pct+'%'; }); }
+  })();
+</script>
 {% endblock %}
