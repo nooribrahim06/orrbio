@@ -1,28 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-      <meta charset="UTF-8"/>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}Orbio{% endblock %}</title>
-    </head>
-    <body>
-      <nav>
-        <div>
-            <a href="/">LOGO</a>
-            <a href="/safety">SAFETY</a>
-            <a href="/investment">Investment</a>
-            <a href="/education">Education</a>
-        </div>
-      </nav>
-      {% block content %}{% endblock %}
-      <footer>
-        <div>
-          <p>Slogan Here</p>
-          <div>
-            <a>FAcebook</a>
-            <a>Instagram</a>
-            <a>Twitter</a>
-        </div>
-      </footer>
-    </body>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/orbio-logo-favicon-256.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  {% block head_extra %}{% endblock %}
+  <style>
+    /* Page-level quick tweaks can live here if needed */
+  </style>
+</head>
+<body>
+  <!-- Stars Background -->
+  <div class="stars-container" id="stars"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-container">
+      <a class="logo" href="{{ url_for('index') }}">
+        <img
+    src="{{ url_for('static', filename='img/orbio-logo-nav-64.png') }}"
+    srcset="{{ url_for('static', filename='img/orbio-logo-nav-64.png') }} 1x,
+            {{ url_for('static', filename='img/orbio-logo-nav-128.png') }} 2x"
+    alt="Orbio logo" class="logo-img">
+        </a>
+
+      <div class="nav-links">
+        <a class="{{ 'active' if active_page=='about' else '' }}" href="{{ url_for('index') }}">About</a>
+        <a class="{{ 'active' if active_page=='safety' else '' }}" href="{{ url_for('safety') }}">Safety</a>
+        <a class="{{ 'active' if active_page=='investment' else '' }}" href="{{ url_for('investment') }}">Investment</a>
+        <a class="{{ 'active' if active_page=='education' else '' }}" href="{{ url_for('education') }}">Education</a>
+      </div>
+      <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-logo">
+        <img
+    src="{{ url_for('static', filename='img/orbio-logo-nav-64.png') }}"
+    srcset="{{ url_for('static', filename='img/orbio-logo-nav-64.png') }} 1x,
+            {{ url_for('static', filename='img/orbio-logo-nav-128.png') }} 2x"
+    alt="Orbio logo" class="footer-logo-img">
+    </div>
+
+      <p class="footer-tagline">Buisness beyond orbits, Impact beyond space.</p>
+      <div class="social-links">
+        <!-- your existing SVGs -->
+        <a href="#"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073..."/></svg></a>
+        <a href="#"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57..."/></svg></a>
+        <a href="#"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163..."/></svg></a>
+      </div>
+      <p class="copyright">© {{ 2025 }} Orbio. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Shared scripts -->
+  <script>
+    function createStars(){
+      const c=document.getElementById('stars');
+      for(let i=0;i<100;i++){
+        const s=document.createElement('div');
+        s.className='star';
+        s.style.left=Math.random()*100+'%';
+        s.style.top=Math.random()*100+'%';
+        const z=(Math.random()*3+1)+'px';
+        s.style.width=z;s.style.height=z;
+        s.style.opacity=Math.random()*0.7+0.3;
+        s.style.animationDelay=Math.random()*4+'s';
+        c.appendChild(s)
+      }
+    }
+    document.addEventListener('click',e=>{
+      if(e.target.matches('.mobile-menu-btn')){
+        const n=document.querySelector('.nav-links');
+        n.style.display=n.style.display==='flex'?'none':'flex';
+      }
+    });
+    window.addEventListener('load',createStars);
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
 </html>
