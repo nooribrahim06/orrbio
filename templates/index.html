@@ -3,49 +3,132 @@
 {% block title %}Orbio - Explore The Cosmos{% endblock %}
 
 {% block content %}
-<section id="home" style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding-top:120px;">
-    <!--here's section 1 where we will intruduce simple ui foe orbit-->
-    <div style="max-width:960px;margin:auto;position:relative">
-        <span>ORBIT. BUILD. INNOVATE.</span>
-        <h1>Buisness beyond orbit, Impact beyond space</h1>
-        <div id="typeTarget" aria-live="polite"></div>
+<section id="home" class="hero" style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding-top:120px;">
+  <div class="hero-inner" style="max-width:960px;margin:auto;position:relative">
+    <span class="eyebrow">ORBIT. BUILD. INNOVATE.</span>
+    <h1>Buisness beyond orbit, Impact beyond space</h1>
+    <div id="typeTarget" class="type-line" aria-live="polite"></div>
 
-        <div class="buttons">
-            <a href="{{ url_for('investment') }}">Start Investing</a>
-            <a href="{{ url_for('safety') }}">Explore Safety</a>
-            <a href="#about">Learn About Us</a>
-            <a href="/education">LEO awareness</a>
-        </div>
-
-        <div data-depth="0.06"></div>
-        <div data-depth="0.09"></div>
-        <div data-depth="0.05"></div>
-
+    <div class="buttons">
+      <a class="btn btn-primary" href="{{ url_for('investment') }}">Start Investing</a>
+      <a class="btn btn-secondary" href="{{ url_for('safety') }}">Explore Safety</a>
+      <a class="btn btn-secondary" href="#about">Learn About Us</a>
+      <a class="btn btn-secondary" href="/education">LEO awareness</a>
     </div>
 
+    <div class="floating-planet planet-1" data-depth="0.06"></div>
+    <div class="floating-planet planet-2" data-depth="0.09"></div>
+    <div class="floating-planet planet-3" data-depth="0.05"></div>
+    <div class="ring"></div>
+  </div>
 </section>
 
-<section>
-    <!--Here where we gonna tell about orbio-->
-    <h2>About Orbio</h2>
-    <div>
-        <div>
-            <h3>Our Cosmic Vision</h3>
-            <p>Orbio is a platform that makes Low Earth Orbit accessible for everyone - from investors and researchers to students and educators.</p>
-            <p>We bring together three essential pillars to build a sustaiable and thriving space economy:</p>
-            <p>-🛡 Safety: Live insights into satellites and orbital debris to raise awareness and reduce collision risks.</p>
-            <p>-🚀 Investment: A booking system where companies and researchers can rent orbital slots for experiments, cameras, or projects. With our ROI Calculator (free for the first month, then subscription-based), investors can forecast returns before committing.</p>
-            <p>-🎓 Education: Tools and experiences that bring space closer to students — from motion graphics and interactive tours today, to immersive VR learning in the future.</p>
-            <p>By connecting safety, investment, and education in one hub, Orbio is shaping the next chapter of commercial activity in orbit while ensuring impact and awareness on Earth.</p>
-        </div>
-        <div>
-            <!--Here goes an image-->
-        </div>
+<section id="about" class="about">
+  <h2 class="section-title">About Orbio</h2>
+  <div class="about-content">
+    <div class="about-text">
+      <h3>Our Cosmic Vision</h3>
+      <p>Orbio is a platform that makes Low Earth Orbit accessible for everyone - from investors and researchers to students and educators.</p>
+      <p>We bring together three essential pillars to build a sustaiable and thriving space economy:</p>
+      <p>-🛡 Safety: Live insights into satellites and orbital debris to raise awareness and reduce collision risks.</p>
+      <p>-🚀 Investment: A booking system where companies and researchers can rent orbital slots for experiments, cameras, or projects. With our ROI Calculator (free for the first month, then subscription-based), investors can forecast returns before committing.</p>
+      <p>-🎓 Education: Tools and experiences that bring space closer to students — from motion graphics and interactive tours today, to immersive VR learning in the future.</p>
+      <p>By connecting safety, investment, and education in one hub, Orbio is shaping the next chapter of commercial activity in orbit while ensuring impact and awareness on Earth.</p>
     </div>
+    <div class="about-image">
+      <img src="https://placeholder-image-service.onrender.com/image/400x300?prompt=Futuristic%20space%20technology%20with%20glowing%20elements%20and%20cosmic%20background&id=orbio-about-1" alt="Advanced space technology">
+    </div>
+  </div>
 </section>
-
-
-<div>
-    <!--Here's assistant-->
+<div id="assistant">
+<img src="static/img/robot.jpg.jpg" alt="Guide" class="avatar" id="avatar">
+  <div class="bubble" id="bubble-box">
+    <p id="bubble-text">Hello 👋! I'm here to guide you through the website.</p>
+    <button id="next-btn">Next ⏭</button>
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const phrases=[
+    "Hosted payloads. Real missions. Real returns.",
+    "LEO access for investors, builders, and schools.",
+    "Safer, faster, and more sustainable operations."
+  ];
+  const typeEl=document.getElementById('typeTarget');
+  let pi=0, ci=0, typing=true, hold=0;
+  function typeLoop(){
+    const p=phrases[pi];
+    if(typing){ ci++; typeEl.textContent=p.slice(0,ci); if(ci===p.length){typing=false;hold=18;} }
+    else{ if(hold>0){hold--;} else { ci--; typeEl.textContent=p.slice(0,ci); if(ci===0){typing=true;pi=(pi+1)%phrases.length;} } }
+    requestAnimationFrame(()=>setTimeout(typeLoop, typing?28:18));
+  }
+
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        en.target.style.opacity=1;
+        en.target.style.transform='translateY(0) scale(1)';
+        en.target.style.transition='transform .6s ease, opacity .6s ease, border-color .3s ease';
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:.15});
+  document.querySelectorAll('.qcard').forEach(el=>io.observe(el));
+
+  const planets=[...document.querySelectorAll('.floating-planet')];
+  document.addEventListener('mousemove', (e)=>{
+    const cx=window.innerWidth/2, cy=window.innerHeight/2;
+    const dx=(e.clientX-cx)/cx, dy=(e.clientY-cy)/cy;
+    planets.forEach(p=>{
+      const depth=parseFloat(p.dataset.depth||0.06);
+      p.style.transform=`translate(${dx*depth*40}px, ${dy*depth*40}px)`;
+    });
+  });
+
+  window.addEventListener('load', typeLoop);
+
+const messages = [
+  "Hello 👋! I'm here to guide you through the website.",
+  "✨ Feature 1: Safety tool to calculate collision percent.",
+  "👤 Feature 2: Book your slots in LEO and calculate the ROI.",
+  "🎁 Feature 3: Raising awareness about LEO.",
+  "💬 Feature 4: A coming soon small game!"
+];
+
+let index = 0;
+const bubbleBox = document.getElementById("bubble-box");
+const bubbleText = document.getElementById("bubble-text");
+const nextBtn = document.getElementById("next-btn");
+const avatar = document.getElementById("avatar");
+let intervalId;
+
+function showNextMessage() {
+  index++;
+  if (index < messages.length) {
+    bubbleText.textContent = messages[index];
+    bubbleBox.style.animation = "bounceIn 0.8s";
+  } else {
+    clearInterval(intervalId);
+    bubbleBox.style.display = "none";
+  }
+}
+
+nextBtn.addEventListener("click", showNextMessage);
+
+
+intervalId = setInterval(showNextMessage, 8000);
+
+// Restart tour when avatar is clicked
+avatar.addEventListener("click", () => {
+  index = 0;
+  bubbleText.textContent = messages[index];
+  bubbleBox.style.display = "block";
+  bubbleBox.style.animation = "bounceIn 0.8s";
+  clearInterval(intervalId);
+  intervalId = setInterval(showNextMessage, 6000);
+});
+
+</script>
 {% endblock %}
