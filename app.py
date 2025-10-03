@@ -417,4 +417,14 @@ def roi():
         investment=investment,
         scenario_index=scenario_index,
     )
+@app.route("/game")
+def game():
+    return render_template("game.html")
+
+@app.route("/adventure")
+def adventure():
+    return render_template("adventure.html")
+
+
+
 

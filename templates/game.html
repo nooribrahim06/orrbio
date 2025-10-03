@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% set active_page = 'game' %}
+{% block title %}Orbio - Game{% endblock %}
+
+{% block content %}
+<section id="game-demo" class="hero" style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding-top:120px;">
+  <div class="hero-inner" style="max-width:960px;margin:auto;position:relative">
+    <span class="eyebrow">PLAY. LEARN. EXPLORE.</span>
+    <h1>🚀 Orbio Aventure</h1>
+    <p class="type-line">Try our interactive space awareness mini-game!</p>
+
+    <!-- Demo video -->
+    <div class="demo-video" style="margin-top:30px;">
+      <video width="640" height="360" controls>
+        <source src="/static/img/game-orbio.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Play button -->
+    <div class="buttons" style="margin-top:20px;">
+      <a class="btn btn-primary" href="{{ url_for('adventure') }}">▶ Play the Game</a>
+    </div>
+
+    <!-- Floating planets just like home page -->
+    <div class="floating-planet planet-1" data-depth="0.06"></div>
+    <div class="floating-planet planet-2" data-depth="0.09"></div>
+    <div class="floating-planet planet-3" data-depth="0.05"></div>
+    <div class="ring"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const planets=[...document.querySelectorAll('.floating-planet')];
+  document.addEventListener('mousemove', (e)=>{
+    const cx=window.innerWidth/2, cy=window.innerHeight/2;
+    const dx=(e.clientX-cx)/cx, dy=(e.clientY-cy)/cy;
+    planets.forEach(p=>{
+      const depth=parseFloat(p.dataset.depth||0.06);
+      p.style.transform=`translate(${dx*depth*40}px, ${dy*depth*40}px)`;
+    });
+  });
+</script>
+{% endblock %}
