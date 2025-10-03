@@ -1,0 +1,214 @@
+{% extends "layout.html" %}
+{% block title %}Book your slot{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* tiny utilities only */
+  .hidden{display:none}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--ring);background:rgba(42,107,146,.12);color:var(--brand-2);font-size:.85rem}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.85rem;font-weight:700;border:1px solid var(--ring)}
+  .good{color:var(--accent-1)} .bad{color:#ff9a9a}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ROI Calculator -->
+<section class="services">
+  <h2 class="section-title">Return on Investment (ROI) Calculator</h2>
+  <p class="section-text" style="text-align:center;margin-bottom:24px">
+    <span class="pill">ROI = (Expected Benefit − Total Cost) ÷ Total Cost</span>
+  </p>
+
+  <div class="analyzer-card">
+    <form method="post" action="{{ url_for('form') }}">
+      <!-- 1) Category -->
+      <div class="fieldset" style="margin-bottom:14px">
+        <div class="legend">1) Choose Category</div>
+        <div class="form-grid" style="grid-template-columns: repeat(3,minmax(160px,1fr));">
+          <div class="field">
+            <label for="category">Category</label>
+            <div class="input-wrap">
+              <select id="category" name="category"
+                style="width:100%;padding:12px;border-radius:10px;background:#0e1520;border:1px solid var(--border);color:var(--text)">
+                <option value="pharma" {{ 'selected' if category=='pharma' else '' }}>Pharma</option>
+                <option value="research" {{ 'selected' if category=='research' else '' }}>Researchers</option>
+                <option value="mfg" {{ 'selected' if category=='mfg' else '' }}>Manufacturers</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2) Shared Costs -->
+      <div class="fieldset">
+        <div class="legend">2) Shared Costs</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Slot Cost</label>
+            <div class="input-wrap"><input type="number" step="any" name="slotCost" value="{{ slotCost }}"><span class="unit">USD</span></div>
+          </div>
+          <div class="field">
+            <label>Monthly Ops</label>
+            <div class="input-wrap"><input type="number" step="any" name="monthlyOps" value="{{ monthlyOps }}"><span class="unit">USD</span></div>
+          </div>
+          <div class="field">
+            <label>Ops Months</label>
+            <div class="input-wrap"><input type="number" step="1" name="opsMonths" value="{{ opsMonths }}"><span class="unit">mo</span></div>
+          </div>
+          <div class="field">
+            <label>Service Fees</label>
+            <div class="input-wrap"><input type="number" step="any" name="serviceFees" value="{{ serviceFees }}"><span class="unit">USD</span></div>
+          </div>
+        </div>
+        <p class="section-text" style="font-size:1rem;margin-top:10px;color:var(--muted)">
+          Total Cost = Slot Cost + (Monthly Ops × Months) + Service Fees.
+        </p>
+      </div>
+
+      <!-- 3) Category-Specific Inputs -->
+      <!-- Pharma -->
+      <div id="pharmaFields" class="fieldset {{ '' if category=='pharma' else 'hidden' }}" style="margin-top:14px">
+        <div class="legend">3) Pharma Inputs</div>
+        <div class="form-grid">
+          <div class="field"><label>Months Saved</label><div class="input-wrap"><input type="number" step="1" name="ph_monthsSaved" value="{{ ph_monthsSaved }}"><span class="unit">mo</span></div></div>
+          <div class="field"><label>Value per Month (5–15M)</label><div class="input-wrap"><input type="number" step="any" name="ph_valuePerMonth" value="{{ ph_valuePerMonth }}"><span class="unit">USD</span></div></div>
+          <div class="field"><label>Asset Value (Peak×Margin×Prob)</label><div class="input-wrap"><input type="number" step="any" name="ph_assetValue" value="{{ ph_assetValue }}"><span class="unit">USD</span></div></div>
+          <div class="field"><label>Microgravity Improvement</label><div class="input-wrap"><input type="number" step="any" name="ph_improvementPct" value="{{ ph_improvementPct }}"><span class="unit">%</span></div></div>
+          <div class="field"><label>Tech Success Probability</label><div class="input-wrap"><input type="number" step="any" name="ph_techProb" value="{{ ph_techProb }}"><span class="unit">%</span></div></div>
+        </div>
+      </div>
+
+      <!-- Researchers -->
+      <div id="researchFields" class="fieldset {{ '' if category=='research' else 'hidden' }}" style="margin-top:14px">
+        <div class="legend">3) Researchers Inputs</div>
+        <div class="form-grid">
+          <div class="field"><label>Grant Probability</label><div class="input-wrap"><input type="number" step="any" name="re_grantProb" value="{{ re_grantProb }}"><span class="unit">%</span></div></div>
+          <div class="field"><label>Grant Value</label><div class="input-wrap"><input type="number" step="any" name="re_grantValue" value="{{ re_grantValue }}"><span class="unit">USD</span></div></div>
+          <div class="field"><label>Publication Value</label><div class="input-wrap"><input type="number" step="any" name="re_pubValue" value="{{ re_pubValue }}"><span class="unit">USD</span></div></div>
+          <div class="field"><label>Students/Attraction Value</label><div class="input-wrap"><input type="number" step="any" name="re_studentsValue" value="{{ re_studentsValue }}"><span class="unit">USD</span></div></div>
+        </div>
+      </div>
+
+      <!-- Manufacturers -->
+      <div id="mfgFields" class="fieldset {{ '' if category=='mfg' else 'hidden' }}" style="margin-top:14px">
+        <div class="legend">3) Manufacturers Inputs</div>
+        <div class="form-grid">
+          <div class="field"><label>Current Margin / Unit</label><div class="input-wrap"><input type="number" step="any" name="mf_marginPerUnit" value="{{ mf_marginPerUnit }}"><span class="unit">USD</span></div></div>
+          <div class="field"><label>Margin Improvement</label><div class="input-wrap"><input type="number" step="any" name="mf_improvementPct" value="{{ mf_improvementPct }}"><span class="unit">%</span></div></div>
+          <div class="field"><label>Units Expected</label><div class="input-wrap"><input type="number" step="1" name="mf_units" value="{{ mf_units }}"><span class="unit">units</span></div></div>
+          <div class="field"><label>Market Adoption Probability</label><div class="input-wrap"><input type="number" step="any" name="mf_adoptionProb" value="{{ mf_adoptionProb }}"><span class="unit">%</span></div></div>
+        </div>
+      </div>
+
+      <!-- 4) Scenario -->
+      <div class="fieldset" style="margin-top:14px">
+        <div class="legend">4) Scenario Setup</div>
+        <div class="form-grid" style="grid-template-columns:repeat(3,minmax(160px,1fr));">
+          <div class="field">
+            <label>Scenario Spread</label>
+            <div class="input-wrap"><input type="number" step="any" name="scenarioSpread" value="{{ scenarioSpread }}"><span class="unit">%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="analyze-btn" type="submit">Calculate ROI</button>
+        <button class="reset-btn" type="reset">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  {% if sc %}
+  <div class="result-card" style="padding:18px;margin-top:20px">
+    <h3>Scenario Results</h3>
+    <table style="width:100%;border-collapse:collapse;margin-top:10px">
+      <thead>
+        <tr><th>Scenario</th><th>Total Cost</th><th>Expected Benefit</th><th>ROI%</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Low</strong></td>
+          <td>{{ sc.low.cost_fmt }}</td>
+          <td>{{ sc.low.benefit_fmt }}</td>
+          <td>{{ sc.low.roi_fmt }}</td>
+          <td><span class="badge {{ 'good' if sc.low.roi_ok else 'bad' }}">{{ 'Positive' if sc.low.roi_ok else 'Negative' }}</span></td>
+        </tr>
+        <tr>
+          <td><strong>Base</strong></td>
+          <td>{{ sc.base.cost_fmt }}</td>
+          <td>{{ sc.base.benefit_fmt }}</td>
+          <td>{{ sc.base.roi_fmt }}</td>
+          <td><span class="badge {{ 'good' if sc.base.roi_ok else 'bad' }}">{{ 'Positive' if sc.base.roi_ok else 'Negative' }}</span></td>
+        </tr>
+        <tr>
+          <td><strong>High</strong></td>
+          <td>{{ sc.high.cost_fmt }}</td>
+          <td>{{ sc.high.benefit_fmt }}</td>
+          <td>{{ sc.high.roi_fmt }}</td>
+          <td><span class="badge {{ 'good' if sc.high.roi_ok else 'bad' }}">{{ 'Positive' if sc.high.roi_ok else 'Negative' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="section-text" style="font-size:1rem;margin-top:10px;color:var(--muted)">
+      Total Cost (Base): <strong>{{ total_cost_fmt }}</strong> — Expected Benefit (Base): <strong>{{ expected_benefit_fmt }}</strong>
+    </p>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Contact / Book your slot -->
+<section class="contact">
+  <h2 class="section-title">Contact</h2>
+  <div class="contact-form">
+    <form id="eduForm">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="Your name" required/>
+      </div>
+      <div class="form-group">
+        <label for="email">Your Email</label>
+        <input type="email" id="email" name="email" placeholder="your.email@example.com" required/>
+      </div>
+      <div class="form-group">
+        <label for="country">Country</label>
+        <input type="text" id="country" placeholder="Country you live in">
+      </div>
+      <div class="form-group">
+        <label for="message">Program Interest</label>
+        <textarea id="message" name="message" placeholder="Tell us about your school/university or what program you need"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="organization">Organization</label>
+        <textarea id="organization" name="organization" placeholder="What's the organization you work for"></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Request Info</button>
+    </form>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Toggle category fieldsets
+  const sel = document.getElementById('category');
+  const blocks = {
+    pharma: document.getElementById('pharmaFields'),
+    research: document.getElementById('researchFields'),
+    mfg: document.getElementById('mfgFields'),
+  };
+  function showCat(v){
+    Object.keys(blocks).forEach(k => blocks[k]?.classList.add('hidden'));
+    (blocks[v] || blocks.pharma)?.classList.remove('hidden');
+  }
+  if (sel){ sel.addEventListener('change', e => showCat(e.target.value)); showCat(sel.value); }
+
+  // Contact toast
+  document.getElementById('eduForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    alert("Thanks! We'll contact you with education program details.");
+    this.reset();
+  });
+</script>
+{% endblock %}
