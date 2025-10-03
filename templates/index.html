@@ -1,14 +1,50 @@
 {% extends "layout.html" %}
 {% set active_page = 'about' %}
-{% block title %}Orbio{% endblock %}
+{% block title %}Orbio - Explore The Cosmos{% endblock %}
 
 {% block content %}
-<section>
+<section id="home" style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding-top:120px;">
     <!--here's section 1 where we will intruduce simple ui foe orbit-->
+    <div style="max-width:960px;margin:auto;position:relative">
+        <span>ORBIT. BUILD. INNOVATE.</span>
+        <h1>Buisness beyond orbit, Impact beyond space</h1>
+        <div id="typeTarget" aria-live="polite"></div>
+
+        <div class="buttons">
+            <a href="{{ url_for('investment') }}">Start Investing</a>
+            <a href="{{ url_for('safety') }}">Explore Safety</a>
+            <a href="#about">Learn About Us</a>
+            <a href="/education">LEO awareness</a>
+        </div>
+
+        <div data-depth="0.06"></div>
+        <div data-depth="0.09"></div>
+        <div data-depth="0.05"></div>
+
+    </div>
+
 </section>
+
 <section>
     <!--Here where we gonna tell about orbio-->
+    <h2>About Orbio</h2>
+    <div>
+        <div>
+            <h3>Our Cosmic Vision</h3>
+            <p>Orbio is a platform that makes Low Earth Orbit accessible for everyone - from investors and researchers to students and educators.</p>
+            <p>We bring together three essential pillars to build a sustaiable and thriving space economy:</p>
+            <p>-🛡 Safety: Live insights into satellites and orbital debris to raise awareness and reduce collision risks.</p>
+            <p>-🚀 Investment: A booking system where companies and researchers can rent orbital slots for experiments, cameras, or projects. With our ROI Calculator (free for the first month, then subscription-based), investors can forecast returns before committing.</p>
+            <p>-🎓 Education: Tools and experiences that bring space closer to students — from motion graphics and interactive tours today, to immersive VR learning in the future.</p>
+            <p>By connecting safety, investment, and education in one hub, Orbio is shaping the next chapter of commercial activity in orbit while ensuring impact and awareness on Earth.</p>
+        </div>
+        <div>
+            <!--Here goes an image-->
+        </div>
+    </div>
 </section>
+
+
 <div>
     <!--Here's assistant-->
 </div>
