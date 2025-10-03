@@ -51,8 +51,7 @@ def safety():
         time_of_min = 0
         collision = False
 
-        # Simulate one hour (3600s) with 60s step
-        for t in range(0, 3600, 60):
+        for t in range(0, 10800, 90):
             sat_pos = [satellite["position"][i] + satellite["velocity"][i]*t for i in range(3)]
             deb_pos = [debris["position"][i] + debris["velocity"][i]*t for i in range(3)]
             dist = distance(sat_pos, deb_pos)
@@ -78,24 +77,12 @@ def safety():
 
 @app.route('/investment', methods=["GET","POST"])
 def investment():
-    # هنا ممكن تحط بيانات مشاريع/استثمارات وهمية كمثال
-    items = [
-        {"name": "Satellite Startup A", "cost": 5000000, "roi": "12%"},
-        {"name": "Space Debris Cleanup", "cost": 2000000, "roi": "20%"},
-        {"name": "Orbital Internet", "cost": 8000000, "roi": "15%"},
-    ]
     return render_template('investment.html', items=items)
 
 @app.route("/form", methods=["GET", "POST"])
 def form():
-
-    ctx = {
-        "title": "Contact Form",
-        "message": "Fill the form below to get in touch."
-    }
     return render_template("form.html", active_page="form", **ctx)
 
-# ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)
 
