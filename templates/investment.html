@@ -1,9 +1,46 @@
 {% extends "layout.html" %}
 {% set active_page = 'investment' %}
-{% block title %}Investment{% endblock %}
+{% block title %}Orbio - Investment{% endblock %}
+
+
+{% block head_extra %}
+<style>
+
+  .hidden{display:none}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--ring);background:rgba(42,107,146,.12);color:var(--brand-2);font-size:.85rem}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.85rem;font-weight:700;border:1px solid var(--ring)}
+  .good{color:var(--accent-1)}
+  .bad{color:#ff9a9a}
+
+</style>
+{% endblock %}
+
 
 {% block content %}
 <section>
     <!--here's section 1 where we will sell our products-->
+    <h2>Investment Opportunities</h2>
+    <h2>Reserve orbital slots for research or projects — with clear ROI before you invest.</h2>
+    <div>
+        {% for name, slot in items.items() %}
+            <div>
+                <!-- Image placeholder -->
+                <img src="https://placeholder-image-service.onrender.com/image/300x200?prompt=Satellite%20&id={{ loop.index }}"alt="{{ name }}">
+
+                <h3>{{ name }}</h3>
+                <p><strong>Company:</strong> {{ slot["Company"] }}</p>
+                <p><strong>Description:</strong> {{ slot["Description"] }}</p>
+                <p><strong>Price:</strong> {{ slot["Price"] }}</p>
+                <p><strong>Duration:</strong> {{ slot["Duration"] }}</p>
+                <p><strong>Slot capacity / space:</strong> {{ slot["Slot capacity / space"] }}</p>
+                <p><strong>Applications:</strong> {{ slot["Applications"] }}</p>
+                <p><strong>Short-term feasibility:</strong> {{ slot["Short-term feasibility"] }}</p>
+                <a href="/form">Book Slot</a>
+            </div>
+        {% endfor %}
+    </div>
 </section>
 {% endblock %}
+
+
+
