@@ -10,28 +10,79 @@
   <div class="videos-grid">
     <!-- Video 1 -->
     <div class="video-block">
-      <h3 class="video-title">Know more about LEO!</h3>
-      <p class="video-desc">Take a journey to Low Earth Orbit. Explore the view, feel the experience, and see what it’s like to be part of the future of space. This is your chance to try LEO for yourself.</p>
+      <h2 class="video-title">Earth’s Busy Backyard: What Really Happens in Low Earth Orbit</h2>
+      <p class="video-desc">
+        Low Earth Orbit (LEO) is Earth’s closest space neighborhood, stretching up to 2,000 km above us.
+        It’s where the International Space Station, thousands of satellites, and countless experiments circle the planet.
+        Because it’s so close, rockets can reach it easily—making it the heart of today’s space industry.
+        But with so much activity, LEO is getting crowded fast.
+      </p>
       <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/VIDEO_ID_1"
-                title="Education Video 1"
-                frameborder="0"
-                allowfullscreen></iframe>
-      </div>
-    </div>
-
-    <!-- Video 2 -->
-    <div class="video-block">
-      <h3 class="video-title">What about a game?</h3>
-      <p class="video-desc">Test your skills in orbit — dodge debris, protect satellites, and see if you can survive the challenges of space. One wrong hit… and it’s a collision.</p>
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/VIDEO_ID_2"
-                title="Education Video 2"
-                frameborder="0"
-                allowfullscreen></iframe>
+      <video controls playsinline preload="metadata" width="100%" height="500" poster="/static/img/vid1-poster.jpg">
+        <source src="/static/img/vid1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
       </div>
     </div>
   </div>
+
+
+  <!-- Video 2 -->
+    <div class="video-block">
+      <h2 class="video-title">Space Junk at 17,500 mph: The Invisible Danger</h2>
+      <p>
+      Orbit isn’t empty—it’s filled with debris from old satellites, rocket parts, and collision fragments.
+      These objects race around Earth at speeds faster than a bullet, turning even a tiny screw into a deadly projectile.
+      Today, over 100 million fragments are believed to be whizzing around, many too small to track.
+      This makes orbital debris one of the greatest risks to astronauts and satellites alike.
+      </p>
+      <div style="display: flex; gap: 20px; text-align: center;">
+        <div>
+          <img src="/static/img/LEO-2019-2048.jpg" alt="First photo" width="500" height="500">
+          <p>LEO view. Credit: NASA ODPO.</p>
+        </div>
+        <div>
+            <img src="/static/img/GEO-2019-4096.jpg" alt="Second photo" width="500" height="500">
+            <p>GEO view. Credit: NASA ODPO</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-block">
+      <h2 class="video-title">Orbital Debris Mitigation Guidelines</h2>
+        <p>In 2007, the United Nations Committee on the Peaceful Uses of Outer Space (COPUOS) adopted a set of guidelines to address orbital debris.</p>
+        <ul>
+        <li>The <strong>Scientific and Technical Subcommittee (STSC)</strong> reached consensus on the guidelines in February 2007.</li>
+        <li>COPUOS formally endorsed them in June 2007.</li>
+        <li>Later that year, the <strong>UN General Assembly</strong> also gave its approval.</li>
+        </ul>
+        <p>These international guidelines align closely with the <strong>U.S. Government’s Orbital Debris Mitigation Standard Practices</strong> and the
+        <strong>Inter-Agency Space Debris Coordination Committee (IADC) guidelines</strong>.</p>
+
+    <p style="margin: 20px 0; text-align: center;">
+  <a href="https://orbitaldebris.jsc.nasa.gov/library/Space-Debris-Mitigation-Guidelines_COPUOS.pdf"
+     target="_blank"
+     style="
+       display: inline-flex;
+       align-items: center;
+       gap: 8px;
+       padding: 10px 16px;
+       background-color: #003366;
+       color: #fff;
+       text-decoration: none;
+       border-radius: 6px;
+       font-weight: 600;
+       font-size: 15px;
+     ">
+    📄 Download Full Guidelines (PDF)
+  </a>
+</p>
+
+
+  </div>
+
+
+
 </section>
 
 {% endblock %}
