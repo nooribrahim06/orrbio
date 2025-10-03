@@ -1,7 +1,5 @@
 {% extends "layout.html" %}
-{% set active_page = 'investment' %}
 {% block title %}Orbio - Investment{% endblock %}
-
 
 {% block head_extra %}
 <style>
@@ -17,30 +15,41 @@
 
 
 {% block content %}
-<section>
-    <!--here's section 1 where we will sell our products-->
-    <h2>Investment Opportunities</h2>
-    <h2>Reserve orbital slots for research or projects — with clear ROI before you invest.</h2>
-    <div>
-        {% for name, slot in items.items() %}
-            <div>
-                <!-- Image placeholder -->
-                <img src="https://placeholder-image-service.onrender.com/image/300x200?prompt=Satellite%20&id={{ loop.index }}"alt="{{ name }}">
+<section class="satellites">
+  <h2 class="section-title">Investment Opportunities</h2>
+  <h2 class="section-text">Reserve orbital slots for research or projects — with clear ROI before you invest.</h2>
+  <div class="satellites-grid">
+    {% for name, slot in items.items() %}
+    <div class="satellite-card">
+      <!-- Image placeholder -->
+      <img src="https://placeholder-image-service.onrender.com/image/300x200?prompt=Satellite%20&id={{ loop.index }}"
+           alt="{{ name }}">
 
-                <h3>{{ name }}</h3>
-                <p><strong>Company:</strong> {{ slot["Company"] }}</p>
-                <p><strong>Description:</strong> {{ slot["Description"] }}</p>
-                <p><strong>Price:</strong> {{ slot["Price"] }}</p>
-                <p><strong>Duration:</strong> {{ slot["Duration"] }}</p>
-                <p><strong>Slot capacity / space:</strong> {{ slot["Slot capacity / space"] }}</p>
-                <p><strong>Applications:</strong> {{ slot["Applications"] }}</p>
-                <p><strong>Short-term feasibility:</strong> {{ slot["Short-term feasibility"] }}</p>
-                <a href="/form">Book Slot</a>
-            </div>
-        {% endfor %}
+      <h3>{{ name }}</h3>
+      <p><strong>Company:</strong> {{ slot["Company"] }}</p>
+      <p><strong>Description:</strong> {{ slot["Description"] }}</p>
+      <p><strong>Price:</strong> {{ slot["Price"] }}</p>
+      <p><strong>Duration:</strong> {{ slot["Duration"] }}</p>
+      <p><strong>Slot capacity / space:</strong> {{ slot["Slot capacity / space"] }}</p>
+      <p><strong>Applications:</strong> {{ slot["Applications"] }}</p>
+      <p><strong>Short-term feasibility:</strong> {{ slot["Short-term feasibility"] }}</p>
+      <a href="{{ url_for('form') }}" class="btn btn-secondary action-btn">Book Slot</a>
     </div>
+    {% endfor %}
+  </div>
 </section>
+
+
 {% endblock %}
 
+{% block scripts %}
+<script>
+  // contact form alert
+  document.getElementById('eduForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    alert("Thanks! We'll contact you soon.");
+    this.reset();
+  });
+</script>
 
-
+{% endblock %}
