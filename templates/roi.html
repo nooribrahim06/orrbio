@@ -1,0 +1,238 @@
+{% extends "layout.html" %}
+{% block title %}ROI Calculator · Orbio{% endblock %}
+
+{% block content %}
+<section class="roi">
+  <h2 class="section-title">ROI Calculator</h2>
+  <p class="section-text">Select a field, experiment, and investment to see expected ROI and scenario outcomes.</p>
+
+  <!-- INPUT CARD -->
+  <div class="roi-card roi-full">
+    <form id="roiForm" method="POST" action="{{ url_for('roi') }}">
+      <div class="grid grid-3">
+        <div class="field">
+          <label for="field">Field</label>
+          <select id="field" name="field" required>
+            <option value="" disabled selected>Select a field</option>
+            {% for f in data.keys() %}
+              <option value="{{ f }}" {% if chosen_field==f %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="experiment">Experiment</label>
+          <select id="experiment" name="experiment" required>
+            <option value="" disabled selected>Select an experiment</option>
+            {% if chosen_field %}
+              {% for exp in data[chosen_field].keys() %}
+                <option value="{{ exp }}" {% if chosen_experiment==exp %}selected{% endif %}>{{ exp }}</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="investment">Investment ($)</label>
+          <input id="investment" name="investment" type="number" min="0" step="1"
+                 placeholder="e.g. 2000000" value="{{ investment if investment is not none }}">
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview">
+        <div><strong>Earth Timeline:</strong> <span id="earth_months">—</span> mo</div>
+        <div><strong>LEO Advantage:</strong> <span id="leo_months_saved">—</span> mo</div>
+        <div><strong>Annual Market Impact:</strong> <span id="annual_market_impact">—</span></div>
+        <div><strong>Base Success Probability:</strong> <span id="success_prob">—</span></div>
+      </div>
+
+      <!-- Scenario slider -->
+      <div class="scenario">
+        <label for="scenarioSlider">Scenario</label>
+        <div class="stops"><span>Low</span><span>Medium</span><span>High</span></div>
+        <input id="scenarioSlider" name="scenario_index" type="range" min="0" max="2" step="1"
+               value="{{ scenario_index }}">
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="roi-calc-btn">Calculate</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- RESULTS + IMAGE -->
+<!-- RESULTS + IMAGE -->
+{% if result %}
+<div class="result-row">
+  <!-- Results card -->
+  <div class="roi-card">
+    <div class="results-head">
+      <h2>Scenario: <span id="scenario_label">{{ result.scenario_label }}</span></h2>
+      <span id="badge_success_prob" class="badge">
+        Success Probability {{ '%.1f' % result.success_prob_percent }}%
+      </span>
+    </div>
+
+    <div class="table">
+      <div class="row"><div>Benefit</div><div id="benefit_out" data-value="{{ result.benefit }}"></div></div>
+      <div class="row"><div>Profit</div><div id="profit_out" data-value="{{ result.profit }}"></div></div>
+      <div class="row"><div>ROI (%, multiple)</div>
+        <div id="roi_out"
+             data-roi-percent="{{ result.roi_percent }}"
+             data-roi-multiple="{{ result.roi_multiple if result.roi_multiple is not none else 0 }}">
+        </div>
+      </div>
+    </div>
+
+    <p class="note" id="all_probs_note"
+       data-probs='{{ result.all_probs_percent | tojson }}'>
+       Probabilities vary by scenario and investment.
+    </p>
+  </div>
+
+  <!-- Scenario image card -->
+  <div class="roi-card scenario-visual">
+    <h3>Scenario Image</h3>
+    {% if result.scenario_label == "Low" %}
+      <img src="{{ url_for('static', filename='img/low.png') }}" alt="Low scenario">
+    {% elif result.scenario_label == "Medium" %}
+      <img src="{{ url_for('static', filename='img/medium.png') }}" alt="Medium scenario">
+    {% elif result.scenario_label == "High" %}
+      <img src="{{ url_for('static', filename='img/high.png') }}" alt="High scenario">
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+
+  <!-- All JS inlined -->
+  <script>
+    const EXPERIMENT_LIBRARY = {{ data|tojson }};
+
+    function formatCurrency(n) {
+      if (!n || isNaN(n)) return "—";
+      return "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+    function formatPercent(n) {
+      if (!n || isNaN(n)) return "—";
+      return Number(n).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+    }
+    const $ = (sel) => document.querySelector(sel);
+
+    const fieldSel = $("#field"), expSel = $("#experiment"), invInp = $("#investment"), slider = $("#scenarioSlider");
+    const PREV = {
+      earth: $("#earth_months"), leo: $("#leo_months_saved"),
+      impact: $("#annual_market_impact"), prob: $("#success_prob")
+    };
+    const scenarioLabel = $("#scenario_label"), outBenefit = $("#benefit_out"),
+          outProfit = $("#profit_out"), outRoi = $("#roi_out"),
+          badgeNeg = $("#badge_negative_roi"), badgeSuccess = $("#badge_success_prob"),
+          ftEarth = $("#ft_earth_months"), ftLeo = $("#ft_leo_months_saved"), ftImpact = $("#ft_annual_market_impact"),
+          allProbsNote = $("#all_probs_note");
+
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+    function scenarioProbabilities(baseP, investmentUsd) {
+      const p = clamp01(Number(baseP) || 0);
+      const investBoost = Math.min((Number(investmentUsd)||0)/5_000_000.0, 0.10);
+      let dlow, dhigh;
+      if (p >= 0.75){ dlow=0.08; dhigh=0.05; }
+      else if (p >= 0.55){ dlow=0.12; dhigh=0.10; }
+      else if (p >= 0.35){ dlow=0.15; dhigh=0.12; }
+      else { dlow=0.10; dhigh=0.18; }
+      const low=clamp01(p - dlow + 0.30*investBoost),
+            med=clamp01(p + 0.60*investBoost),
+            high=clamp01(p + dhigh + 1.00*investBoost);
+      return { Low: low, Medium: med, High: high };
+    }
+
+    function getCurrentExperiment(){
+      const f=fieldSel?.value, e=expSel?.value;
+      if (!f || !e || !EXPERIMENT_LIBRARY[f] || !EXPERIMENT_LIBRARY[f][e]) return null;
+      return EXPERIMENT_LIBRARY[f][e];
+    }
+    function populateExperiments(){
+      expSel.innerHTML=`<option value="" disabled selected>Select an experiment</option>`;
+      const f=fieldSel.value;
+      if (!f || !EXPERIMENT_LIBRARY[f]) return;
+      Object.keys(EXPERIMENT_LIBRARY[f]).forEach(expName=>{
+        const opt=document.createElement("option");
+        opt.value=opt.textContent=expName;
+        expSel.appendChild(opt);
+      });
+    }
+    function updatePreview(){
+      const exp=getCurrentExperiment();
+      if (!exp){ PREV.earth.textContent=PREV.leo.textContent=PREV.impact.textContent=PREV.prob.textContent="—"; return;}
+      PREV.earth.textContent=exp.earth_months;
+      PREV.leo.textContent=exp.leo_months_saved;
+      PREV.impact.textContent=formatCurrency(exp.annual_market_impact);
+      PREV.prob.textContent=formatPercent(exp.success_prob*100);
+    }
+function computeClientSide() {
+  const exp = getCurrentExperiment();
+  if (!exp || !outBenefit || !outProfit || !outRoi) return;
+
+  const scenarioIndex = Number(slider?.value || 1);
+  const scenLabel = ["Low", "Medium", "High"][scenarioIndex] || "Medium";
+  const mult = scenarioIndex === 0 ? 0.6 : scenarioIndex === 2 ? 1.4 : 1.0;
+
+  const annual = Number(exp.annual_market_impact);
+  const monthsSaved = Number(exp.leo_months_saved);
+  const monthlyValue = annual / 12.0;
+  const baseBenefit = monthsSaved * monthlyValue;
+
+  const scenarioBenefit = mult * baseBenefit;
+  const inv = Number((invInp?.value || "0").toString().replace(/,/g, ""));
+  const profit = scenarioBenefit - inv;
+
+  // ROI % (with edge-case handling)
+  let roiPercent;
+  if (inv > 0) {
+    roiPercent = (profit / inv) * 100.0;
+  } else {
+    roiPercent = profit < 0 ? -Infinity : 0.0;
+  }
+
+  // Scenario-aware probabilities
+  const probs = scenarioProbabilities(Number(exp.success_prob), inv);
+  const scenProb = probs[scenLabel] * 100.0;
+
+  // Update UI
+  if (scenarioLabel) scenarioLabel.textContent = scenLabel;
+  outBenefit.textContent = formatCurrency(scenarioBenefit);
+  outProfit.textContent = formatCurrency(profit);
+  outRoi.textContent = Number(roiPercent).toLocaleString(
+    undefined,
+    { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+  ) + "%";
+
+  // Negative ROI badge
+  const eps = 1e-6;
+  if (badgeNeg) {
+    const isNegativeROI = roiPercent < -eps;
+    badgeNeg.classList.toggle("hidden", !isNegativeROI);
+  }
+
+  // Success probability badge
+  if (badgeSuccess) {
+    badgeSuccess.textContent = `Success Probability ${formatPercent(scenProb)}`;
+  }
+
+  // Debug/helper note: all scenario probs
+  if (allProbsNote) {
+    allProbsNote.dataset.probs = JSON.stringify({
+      Low: probs.Low * 100.0,
+      Medium: probs.Medium * 100.0,
+      High: probs.High * 100.0
+    });
+  }
+}
+
+
+    fieldSel?.addEventListener("change",()=>{ populateExperiments(); updatePreview(); computeClientSide(); });
+    expSel?.addEventListener("change",()=>{ updatePreview(); computeClientSide(); });
+    invInp?.addEventListener("input",()=>{ computeClientSide(); });
+    slider?.addEventListener("input",()=>{ computeClientSide(); });
+    document.addEventListener("DOMContentLoaded",()=>{ updatePreview(); computeClientSide(); });
+  </script>
+</section>
+{% endblock %}

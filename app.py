@@ -1,7 +1,169 @@
 from flask import Flask, render_template, request
 import math
+from decimal import Decimal
 
 app = Flask(__name__)
+
+EXPERIMENT_LIBRARY = {
+  "Pharma": {
+    "Protein Crystallization": {
+      "earth_months": 36,
+      "leo_months_saved": 12,
+      "annual_market_impact": 120_000_000,
+      "success_prob": 0.72
+    },
+    "Vaccine Development": {
+      "earth_months": 30,
+      "leo_months_saved": 10,
+      "annual_market_impact": 80_000_000,
+      "success_prob": 0.68
+    }
+  },
+  "Materials": {
+    "Alloy Stress Testing": {
+      "earth_months": 24,
+      "leo_months_saved": 6,
+      "annual_market_impact": 15_000_000,
+      "success_prob": 0.62
+    },
+    "ZBLAN Fiber Manufacturing": {
+      "earth_months": 20,
+      "leo_months_saved": 8,
+      "annual_market_impact": 100_000_000,
+      "success_prob": 0.70
+    }
+  },
+  "Biotech": {
+    "Protein Structure Analysis": {
+      "earth_months": 30,
+      "leo_months_saved": 12,
+      "annual_market_impact": 50_000_000,
+      "success_prob": 0.66
+    },
+    "Stem Cell Growth": {
+      "earth_months": 48,
+      "leo_months_saved": 15,
+      "annual_market_impact": 70_000_000,
+      "success_prob": 0.64
+    }
+  },
+  "Electronics": {
+    "Semiconductor Radiation Test": {
+      "earth_months": 18,
+      "leo_months_saved": 8,
+      "annual_market_impact": 30_000_000,
+      "success_prob": 0.60
+    },
+    "Quantum Sensor Calibration": {
+      "earth_months": 36,
+      "leo_months_saved": 12,
+      "annual_market_impact": 60_000_000,
+      "success_prob": 0.58
+    }
+  },
+  "Climate": {
+    "Remote Sensing Instruments": {
+      "earth_months": 24,
+      "leo_months_saved": 10,
+      "annual_market_impact": 40_000_000,
+      "success_prob": 0.65
+    }
+  },
+  "Agriculture": {
+    "Plant Growth Studies": {
+      "earth_months": 30,
+      "leo_months_saved": 12,
+      "annual_market_impact": 25_000_000,
+      "success_prob": 0.63
+    }
+  },
+  "Medical Tech": {
+    "Tissue Engineering": {
+      "earth_months": 48,
+      "leo_months_saved": 18,
+      "annual_market_impact": 200_000_000,
+      "success_prob": 0.67
+    }
+  }
+}
+
+# Scenario multipliers (Low / Medium / High)
+SCENARIOS = {
+    0: {"label": "Low",    "mult": Decimal("0.6")},
+    1: {"label": "Medium", "mult": Decimal("1.0")},
+    2: {"label": "High",   "mult": Decimal("1.4")}
+}
+
+# -------- Scenario-aware probabilities --------
+def clamp01(x: float) -> float:
+    return max(0.0, min(1.0, x))
+
+def scenario_probabilities(base_p: float, investment_usd: float):
+    """
+    base_p: experiment['success_prob'] in [0,1]
+    investment_usd: user-entered investment in $
+    Returns probabilities for Low/Medium/High in [0,1]
+    """
+    p = clamp01(float(base_p))
+    # Investment boost: up to +10 pts at $5M+ (tunable)
+    invest_boost = min(investment_usd / 5_000_000.0, 0.10)
+
+    # Spread depends on base probability (tighter if strong base)
+    if p >= 0.75:
+        d_low, d_high = 0.08, 0.05
+    elif p >= 0.55:
+        d_low, d_high = 0.12, 0.10
+    elif p >= 0.35:
+        d_low, d_high = 0.15, 0.12
+    else:
+        d_low, d_high = 0.10, 0.18
+
+    p_low  = clamp01(p - d_low  + 0.30 * invest_boost)
+    p_med  = clamp01(p + 0.60 * invest_boost)
+    p_high = clamp01(p + d_high + 1.00 * invest_boost)
+
+    return {"Low": p_low, "Medium": p_med, "High": p_high}
+
+# -------- Core computation (with ROI multiple) --------
+def compute_roi(experiment: dict, investment: float, scenario_index: int = 1):
+    if not experiment:
+        return None
+
+    annual_market_impact = Decimal(experiment["annual_market_impact"])
+    leo_months_saved = Decimal(experiment["leo_months_saved"])
+    base_success_prob = float(experiment["success_prob"])
+
+    monthly_value = annual_market_impact / Decimal(12)
+    base_benefit = leo_months_saved * monthly_value
+
+    scenario = SCENARIOS.get(scenario_index, SCENARIOS[1])
+    scenario_benefit = scenario["mult"] * base_benefit
+    inv = Decimal(investment)
+    profit = scenario_benefit - inv
+
+    if inv > 0:
+        roi_percent = (profit / inv) * Decimal(100)
+        roi_multiple = (profit / inv) + Decimal(1)
+    else:
+        roi_percent = Decimal(0)
+        roi_multiple = None
+
+    probs = scenario_probabilities(base_success_prob, float(investment))
+    scen_label = scenario["label"]
+    scen_prob_pct = probs.get(scen_label, probs["Medium"]) * 100.0
+
+    return {
+        "scenario_label": scen_label,
+        "benefit": float(scenario_benefit),
+        "profit": float(profit),
+        "roi_percent": float(roi_percent),
+        "roi_multiple": float(roi_multiple) if roi_multiple is not None else None,
+        "success_prob_percent": float(scen_prob_pct),
+        "monthly_value": float(monthly_value),
+        "base_benefit": float(base_benefit),
+        "all_probs_percent": {k: v * 100.0 for k, v in probs.items()}
+    }
+
 
 def clamp(v, lo, hi):
     try:
@@ -212,89 +374,47 @@ def investment():
 
 @app.route("/form", methods=["GET", "POST"])
 def form():
-    ctx = {
-        "category": "pharma",
-        # shared costs defaults
-        "slotCost": 2_000_000,
-        "monthlyOps": 50_000,
-        "opsMonths": 6,
-        "serviceFees": 150_000,
-        # pharma defaults
-        "ph_monthsSaved": 6,
-        "ph_valuePerMonth": 8_000_000,
-        "ph_assetValue": 120_000_000,
-        "ph_improvementPct": 3,
-        "ph_techProb": 70,
-        # research defaults
-        "re_grantProb": 40,
-        "re_grantValue": 300_000,
-        "re_pubValue": 30_000,
-        "re_studentsValue": 200_000,
-        # manufacturers defaults
-        "mf_marginPerUnit": 50,
-        "mf_improvementPct": 120,
-        "mf_units": 200_000,
-        "mf_adoptionProb": 35,
-        # scenario
-        "scenarioSpread": 25,
-        # results
-        "sc": None,
-        "total_cost_fmt": None,
-        "expected_benefit_fmt": None,
-    }
-
-    if request.method == "POST":
-        category = request.form.get("category", "pharma")
-        ctx["category"] = category
-
-        # common costs
-        slot_cost   = ctx["slotCost"]    = getf(request.form, "slotCost", ctx["slotCost"])
-        monthly_ops = ctx["monthlyOps"]  = getf(request.form, "monthlyOps", ctx["monthlyOps"])
-        ops_months  = ctx["opsMonths"]   = getf(request.form, "opsMonths", ctx["opsMonths"])
-        service_fee = ctx["serviceFees"] = getf(request.form, "serviceFees", ctx["serviceFees"])
-        cost = total_cost(slot_cost, monthly_ops, ops_months, service_fee)
-
-        # category specifics
-        if category == "pharma":
-            months_saved = ctx["ph_monthsSaved"]    = getf(request.form, "ph_monthsSaved", ctx["ph_monthsSaved"])
-            value_month  = ctx["ph_valuePerMonth"]  = getf(request.form, "ph_valuePerMonth", ctx["ph_valuePerMonth"])
-            asset_value  = ctx["ph_assetValue"]     = getf(request.form, "ph_assetValue", ctx["ph_assetValue"])
-            improve_pct  = ctx["ph_improvementPct"] = getf(request.form, "ph_improvementPct", ctx["ph_improvementPct"])
-            tech_prob    = ctx["ph_techProb"]       = getf(request.form, "ph_techProb", ctx["ph_techProb"])
-            benefit = benefit_pharma(months_saved, value_month, asset_value, improve_pct, tech_prob)
-
-        elif category == "research":
-            grant_prob     = ctx["re_grantProb"]     = getf(request.form, "re_grantProb", ctx["re_grantProb"])
-            grant_value    = ctx["re_grantValue"]    = getf(request.form, "re_grantValue", ctx["re_grantValue"])
-            pub_value      = ctx["re_pubValue"]      = getf(request.form, "re_pubValue", ctx["re_pubValue"])
-            students_value = ctx["re_studentsValue"] = getf(request.form, "re_studentsValue", ctx["re_studentsValue"])
-            benefit = benefit_research(grant_prob, grant_value, pub_value, students_value)
-
-        else:  # mfg
-            margin_per  = ctx["mf_marginPerUnit"]  = getf(request.form, "mf_marginPerUnit", ctx["mf_marginPerUnit"])
-            improve_pct = ctx["mf_improvementPct"] = getf(request.form, "mf_improvementPct", ctx["mf_improvementPct"])
-            units       = ctx["mf_units"]          = getf(request.form, "mf_units", ctx["mf_units"])
-            adopt_prob  = ctx["mf_adoptionProb"]   = getf(request.form, "mf_adoptionProb", ctx["mf_adoptionProb"])
-            benefit = benefit_mfg(margin_per, improve_pct, units, adopt_prob)
-
-        spread = ctx["scenarioSpread"] = getf(request.form, "scenarioSpread", ctx["scenarioSpread"])
-        sc = scenarios(benefit, cost, spread)
-
-        # pre-format for template (no lambdas in Jinja)
-        for k in sc:
-            sc[k]["cost_fmt"] = fmt_usd(sc[k]["cost"])
-            sc[k]["benefit_fmt"] = fmt_usd(sc[k]["benefit"])
-            sc[k]["roi_fmt"] = fmt_pct(sc[k]["roi"])
-            sc[k]["roi_ok"] = (sc[k]["roi"] >= 0)
-
-        ctx["sc"] = sc
-        ctx["total_cost_fmt"] = fmt_usd(cost)
-        ctx["expected_benefit_fmt"] = fmt_usd(benefit)
-
-    # pass active_page exactly ONCE
-    return render_template("form.html", active_page="form", **ctx)
+    return render_template("form.html", active_page="form")
 
 # If this file is run directly:
 @app.route("/education")
 def education():
     return render_template("education.html")
+
+@app.route("/roi", methods=["GET", "POST"])
+def roi():
+    # ... keep your same logic ...
+    result = None
+    field = None
+    experiment_name = None
+    investment = None
+    scenario_index = 1  # default Medium
+
+    if request.method == "POST":
+        field = request.form.get("field")
+        experiment_name = request.form.get("experiment")
+        investment_raw = request.form.get("investment", "0").replace(",", "").strip()
+        scenario_index = int(request.form.get("scenario_index", 1))
+
+        try:
+            investment = float(investment_raw)
+        except ValueError:
+            investment = 0.0
+
+        experiment = None
+        if field in EXPERIMENT_LIBRARY and experiment_name in EXPERIMENT_LIBRARY[field]:
+            experiment = EXPERIMENT_LIBRARY[field][experiment_name]
+
+        if experiment:
+            result = compute_roi(experiment, investment, scenario_index)
+    return render_template(
+        "roi.html",
+        data=EXPERIMENT_LIBRARY,
+        scenarios=SCENARIOS,
+        result=result,
+        chosen_field=field,
+        chosen_experiment=experiment_name,
+        investment=investment,
+        scenario_index=scenario_index,
+    )
+
