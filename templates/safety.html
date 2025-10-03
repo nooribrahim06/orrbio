@@ -156,6 +156,19 @@
   </div>
 </div>
 </section>
+  <section id="assistant" aria-live="polite" aria-label="Site assistant">
+    <img
+      src="{{ url_for('static', filename='img/robot.jpg.jpg') }}"
+      alt="Assistant guide"
+      class="avatar"
+      id="avatar"
+      loading="lazy"
+    />
+    <div class="bubble" id="bubble-box">
+      <p id="bubble-text">Hello 👋! I'm here to guide you through the website.</p>
+      <button id="next-btn" type="button" aria-label="Next message">Next ⏭</button>
+    </div>
+  </section>
 {% endblock %}
 
 {% block scripts %}
@@ -164,5 +177,83 @@
     const bar=document.getElementById('progress-bar');
     if(bar){ const pct=parseFloat(bar.textContent)||0; requestAnimationFrame(()=>{ bar.style.width=pct+'%'; }); }
   })();
+ const phrases=[
+    "Hosted payloads. Real missions. Real returns.",
+    "LEO access for investors, builders, and schools.",
+    "Safer, faster, and more sustainable operations."
+  ];
+  (function () {
+    const phrases = [
+      "Hosted payloads. Real missions. Real returns.",
+      "LEO access for investors, builders, and schools.",
+      "Safer, faster, and more sustainable operations."
+    ];
+    const typeEl = document.getElementById('typeTarget');
+    if (!typeEl) return; // <— prevents crash on pages without #typeTarget
+
+    let pi = 0, ci = 0, typing = true, hold = 0;
+    function typeLoop() {
+      const p = phrases[pi];
+      if (typing) {
+        ci++; typeEl.textContent = p.slice(0, ci);
+        if (ci === p.length) { typing = false; hold = 18; }
+      } else {
+        if (hold > 0) { hold--; }
+        else { ci--; typeEl.textContent = p.slice(0, ci);
+          if (ci === 0) { typing = true; pi = (pi + 1) % phrases.length; }
+        }
+      }
+      requestAnimationFrame(() => setTimeout(typeLoop, typing ? 28 : 18));
+    }
+    window.addEventListener('load', typeLoop);
+  })();
+
+  // ---- ASSISTANT TOUR (guards for required assistant nodes)
+  (function () {
+    const bubbleBox = document.getElementById("bubble-box");
+    const bubbleText = document.getElementById("bubble-text");
+    const nextBtn = document.getElementById("next-btn");
+    const avatar = document.getElementById("avatar");
+    if (!bubbleBox || !bubbleText || !nextBtn || !avatar) return; // if assistant HTML wasn’t rendered
+
+const messages = [
+  "🛰️ Welcome to Safety! Let’s check for collision risks together.",
+  "📍 First step: paste the satellite’s position data you got from Space-Track.",
+  "🔢 Make sure you’ve included both position and velocity (x, y, z + vx, vy, vz).",
+  "💡 Pro tip: if you’re testing, try two satellites close in orbit to see a higher risk.",
+  "🚦 Once you hit ‘Analyze’, I’ll calculate the probability of conjunction for you."
+];
+
+
+    let index = 0;
+    let intervalId = null;
+
+    function showNextMessage() {
+      index++;
+      if (index < messages.length) {
+        bubbleText.textContent = messages[index];
+        // Optional animation: only works if you added @keyframes bounceIn in base CSS
+        bubbleBox.style.animation = "bounceIn 0.8s";
+      } else {
+        stopInterval();
+        bubbleBox.style.display = "none";
+      }
+    }
+
+    function startInterval(ms = 8000) { stopInterval(); intervalId = setInterval(showNextMessage, ms); }
+    function stopInterval() { if (intervalId) { clearInterval(intervalId); intervalId = null; } }
+
+    nextBtn.addEventListener("click", showNextMessage);
+    startInterval(8000);
+
+    avatar.addEventListener("click", () => {
+      index = 0;
+      bubbleText.textContent = messages[index];
+      bubbleBox.style.display = "block";
+      bubbleBox.style.animation = "bounceIn 0.8s";
+      startInterval(6000);
+    });
+  })();
+
 </script>
 {% endblock %}

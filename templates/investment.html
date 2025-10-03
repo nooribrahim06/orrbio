@@ -15,9 +15,23 @@
 
 
 {% block content %}
+<!-- ROI CTA — minimal, no image -->
 <section class="satellites">
   <h2 class="section-title">Investment Opportunities</h2>
   <h2 class="section-text">Reserve orbital slots for research or projects — with clear ROI before you invest.</h2>
+  <section class="roi-cta-min">
+  <div class="roi-cta-min__inner">
+    <div class="roi-cta-min__text">
+      <span class="pill">ROI</span>
+      <h3 class="roi-cta-min__title">Quick ROI check</h3>
+      <p class="roi-cta-min__desc">Estimate returns for your payload in minutes.</p>
+    </div>
+    <div class="roi-cta-min__actions">
+      <a class="btn btn-primary" href="{{ url_for('roi') }}">Open ROI Calculator</a>
+    </div>
+  </div>
+</section>
+
   <div class="satellites-grid">
     {% for name, slot in items.items() %}
     <div class="satellite-card">

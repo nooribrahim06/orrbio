@@ -28,7 +28,7 @@
   <h2 class="section-title">About Orbio</h2>
   <div class="about-content">
     <div class="about-text">
-      <h3>Our Cosmic Vision</h3>
+      <h3>How we turn orbital chaos into opportunities.</h3>
       <p>Orbio is a platform that makes Low Earth Orbit accessible for everyone - from investors and researchers to students and educators.</p>
       <p>We bring together three essential pillars to build a sustaiable and thriving space economy:</p>
       <p>-🛡 Safety: Live insights into satellites and orbital debris to raise awareness and reduce collision risks.</p>
@@ -37,17 +37,23 @@
       <p>By connecting safety, investment, and education in one hub, Orbio is shaping the next chapter of commercial activity in orbit while ensuring impact and awareness on Earth.</p>
     </div>
     <div class="about-image">
-      <img src="https://placeholder-image-service.onrender.com/image/400x300?prompt=Futuristic%20space%20technology%20with%20glowing%20elements%20and%20cosmic%20background&id=orbio-about-1" alt="Advanced space technology">
+      <img src="{{ url_for('static', filename='img/about.jpg') }}" alt="Advanced space technology">
     </div>
   </div>
 </section>
-<div id="assistant">
-<img src="static/img/robot.jpg.jpg" alt="Guide" class="avatar" id="avatar">
-  <div class="bubble" id="bubble-box">
-    <p id="bubble-text">Hello 👋! I'm here to guide you through the website.</p>
-    <button id="next-btn">Next ⏭</button>
-  </div>
-</div>
+  <section id="assistant" aria-live="polite" aria-label="Site assistant">
+    <img
+      src="{{ url_for('static', filename='img/robot.jpg.jpg') }}"
+      alt="Assistant guide"
+      class="avatar"
+      id="avatar"
+      loading="lazy"
+    />
+    <div class="bubble" id="bubble-box">
+      <p id="bubble-text">Hello 👋! I'm here to guide you through the website.</p>
+      <button id="next-btn" type="button" aria-label="Next message">Next ⏭</button>
+    </div>
+  </section>
 {% endblock %}
 
 {% block scripts %}
