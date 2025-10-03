@@ -1,43 +1,48 @@
 {% extends "layout.html" %}
-{% set active_page = 'about' %}
+{% set active_page = 'education' %}
 {% block title %}Orbio - Education{% endblock %}
 
 {% block content %}
-<section>
-    <!--here's section 1 where we will intruduce simple videos for raising awareness-->
-    <h2>Education & Outreach</h2>
+<!-- Education Section -->
+<section class="education">
+  <h2 class="section-title">Education & Outreach</h2>
 
-    <div>
-        <!-- Video 1 -->
-        <div>
-            <h3>Know more about LEO!</h3>
-            <p>Take a journey to Low Earth Orbit. Explore the view, feel the experience, and see what it’s like to be part of the future of space. This is your chance to try LEO for yourself.</p>
-            <div>
-                <iframe src="https://www.youtube.com/embed/VIDEO_ID_1"
+  <div class="videos-grid">
+    <!-- Video 1 -->
+    <div class="video-block">
+      <h3 class="video-title">Know more about LEO!</h3>
+      <p class="video-desc">Take a journey to Low Earth Orbit. Explore the view, feel the experience, and see what it’s like to be part of the future of space. This is your chance to try LEO for yourself.</p>
+      <div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/VIDEO_ID_1"
                 title="Education Video 1"
                 frameborder="0"
-                allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-        <!-- Video 1 -->
-        <div>
-            <h3>What about a game?</h3>
-            <p>Test your skills in orbit — dodge debris, protect satellites, and see if you can survive the challenges of space. One wrong hit… and it’s a collision.</p>
-            <div>
-                <iframe src="https://www.youtube.com/embed/VIDEO_ID_2"
-                title="Education Video 2"
-                frameborder="0"
-                allowfullscreen>
-                </iframe>
-            </div>
-        </div>
+                allowfullscreen></iframe>
+      </div>
     </div>
 
+    <!-- Video 2 -->
+    <div class="video-block">
+      <h3 class="video-title">What about a game?</h3>
+      <p class="video-desc">Test your skills in orbit — dodge debris, protect satellites, and see if you can survive the challenges of space. One wrong hit… and it’s a collision.</p>
+      <div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/VIDEO_ID_2"
+                title="Education Video 2"
+                frameborder="0"
+                allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
 </section>
-<section>
-    <!--Here where we gonna introduce a simple game-->
 
-</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('eduForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    alert("Thanks! We'll contact you with education program details.");
+    this.reset();
+  });
+</script>
 {% endblock %}
 
