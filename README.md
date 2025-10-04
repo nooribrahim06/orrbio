@@ -56,7 +56,7 @@ Run the app:
 flask run
 
 
-Open in browser → http://127.0.0.1:5000/
+Open in browser → https://palaeoentomological-zana-mullishly.ngrok-free.dev
 
 🌍 Why Orbio?
 
