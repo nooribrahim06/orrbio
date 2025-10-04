@@ -1,8 +1,29 @@
 from flask import Flask, render_template, request
 import math
 from decimal import Decimal
+from skyfield.api import Loader, EarthSatellite
+from datetime import datetime, timezone
+from flask import render_template, request
+from tle_utils import tle_to_state_km
+from datetime import datetime, timezone
+
 
 app = Flask(__name__)
+
+
+def distance(a, b):
+    return ((a[0]-b[0])**2 + (a[1]-b[1])**2 + (a[2]-b[2])**2) ** 0.5
+
+def risk_level(min_dist_km: float) -> str:
+    if min_dist_km < 1:   return "🚨 High"
+    if min_dist_km < 5:   return "⚠️ Medium"
+    return "✅ Low"
+
+
+
+load = Loader('./skycache')
+ts = load.timescale()
+
 
 EXPERIMENT_LIBRARY = {
   "Pharma": {
@@ -93,6 +114,14 @@ SCENARIOS = {
     1: {"label": "Medium", "mult": Decimal("1.0")},
     2: {"label": "High",   "mult": Decimal("1.4")}
 }
+
+def tle_to_state_vectors(tle1: str, tle2: str):
+    sat = EarthSatellite(tle1.strip(), tle2.strip(), "obj", ts)
+    t = ts.from_datetime(datetime.utcnow().replace(tzinfo=timezone.utc))
+    g = sat.at(t)
+    x, y, z = g.position.km          # km
+    vx, vy, vz = g.velocity.km_per_s # km/s
+    return x, y, z, vx, vy, vz
 
 # -------- Scenario-aware probabilities --------
 def clamp01(x: float) -> float:
@@ -238,32 +267,65 @@ def index():
 @app.route("/safety", methods=["GET","POST"])
 def safety():
     result = None
+    sat_derived = None
+    deb_derived = None
+    sat_tle_error = None
+    deb_tle_error = None
+
     if request.method == "POST":
-        # Satellite data
-        sat_x = float(request.form["sat_x"])
-        sat_y = float(request.form["sat_y"])
-        sat_z = float(request.form["sat_z"])
-        sat_vx = float(request.form["sat_vx"])
-        sat_vy = float(request.form["sat_vy"])
-        sat_vz = float(request.form["sat_vz"])
+        # ---------- Satellite: prefer TLE if present ----------
+        sat_tle = (request.form.get("sat_tle") or "").strip()
+        if sat_tle:
+            try:
+                (sx, sy, sz), (svx, svy, svz) = tle_to_state_km(sat_tle, when=None)  # at TLE epoch
+                sat_derived = {"position": (sx, sy, sz), "velocity": (svx, svy, svz)}
+            except Exception as e:
+                sat_tle_error = f"Satellite TLE error: {e}"
+                sx = float(request.form["sat_x"])
+                sy = float(request.form["sat_y"])
+                sz = float(request.form["sat_z"])
+                svx = float(request.form["sat_vx"])
+                svy = float(request.form["sat_vy"])
+                svz = float(request.form["sat_vz"])
+        else:
+            sx = float(request.form["sat_x"])
+            sy = float(request.form["sat_y"])
+            sz = float(request.form["sat_z"])
+            svx = float(request.form["sat_vx"])
+            svy = float(request.form["sat_vy"])
+            svz = float(request.form["sat_vz"])
 
-        # Debris data
-        deb_x = float(request.form["deb_x"])
-        deb_y = float(request.form["deb_y"])
-        deb_z = float(request.form["deb_z"])
-        deb_vx = float(request.form["deb_vx"])
-        deb_vy = float(request.form["deb_vy"])
-        deb_vz = float(request.form["deb_vz"])
+        # ---------- Debris: prefer TLE if present ----------
+        deb_tle = (request.form.get("deb_tle") or "").strip()
+        if deb_tle:
+            try:
+                (dx, dy, dz), (dvx, dvy, dvz) = tle_to_state_km(deb_tle, when=None)  # at TLE epoch
+                deb_derived = {"position": (dx, dy, dz), "velocity": (dvx, dvy, dvz)}
+            except Exception as e:
+                deb_tle_error = f"Debris TLE error: {e}"
+                dx = float(request.form["deb_x"])
+                dy = float(request.form["deb_y"])
+                dz = float(request.form["deb_z"])
+                dvx = float(request.form["deb_vx"])
+                dvy = float(request.form["deb_vy"])
+                dvz = float(request.form["deb_vz"])
+        else:
+            dx = float(request.form["deb_x"])
+            dy = float(request.form["deb_y"])
+            dz = float(request.form["deb_z"])
+            dvx = float(request.form["deb_vx"])
+            dvy = float(request.form["deb_vy"])
+            dvz = float(request.form["deb_vz"])
 
-        satellite = {"position": [sat_x, sat_y, sat_z], "velocity": [sat_vx, sat_vy, sat_vz]}
-        debris = {"position": [deb_x, deb_y, deb_z], "velocity": [deb_vx, deb_vy, deb_vz]}
+        satellite = {"position": [sx, sy, sz], "velocity": [svx, svy, svz]}
+        debris    = {"position": [dx, dy, dz], "velocity": [dvx, dvy, dvz]}
 
+        # ---------- Your original calculation (unchanged) ----------
         min_dist = float("inf")
         time_of_min = 0
         collision = False
 
-        # Simulate one hour (3600s) with 60s step
-        for t in range(0, 3600, 60):
+        for t in range(0, 3600, 60):  # 1 hour, 60 s step
             sat_pos = [satellite["position"][i] + satellite["velocity"][i]*t for i in range(3)]
             deb_pos = [debris["position"][i] + debris["velocity"][i]*t for i in range(3)]
             dist = distance(sat_pos, deb_pos)
@@ -285,7 +347,12 @@ def safety():
             "risk_percentage": risk_percentage
         }
 
-    return render_template("safety.html", result=result)
+    return render_template("safety.html",
+                           result=result,
+                           sat_derived=sat_derived,
+                           deb_derived=deb_derived,
+                           sat_tle_error=sat_tle_error,
+                           deb_tle_error=deb_tle_error)
 
 @app.route('/investment', methods=["GET","POST"])
 def investment():
@@ -425,6 +492,21 @@ def game():
 def adventure():
     return render_template("adventure.html")
 
-
-
+@app.post("/api/convert-tle")
+def api_convert_tle():
+    # Works with either form-encoded or JSON bodies
+    tle1 = (request.form.get("tle1") or (request.json or {}).get("tle1") or "").strip()
+    tle2 = (request.form.get("tle2") or (request.json or {}).get("tle2") or "").strip()
+    if not tle1 or not tle2:
+        return jsonify({"ok": False, "error": "Missing TLE lines (tle1, tle2)."}), 400
+    try:
+        x, y, z, vx, vy, vz = tle_to_state_vectors(tle1, tle2)
+        return jsonify({
+            "ok": True,
+            "x": round(x, 3), "y": round(y, 3), "z": round(z, 3),
+            "vx": round(vx, 4), "vy": round(vy, 4), "vz": round(vz, 4)
+        }), 200
+    except Exception as e:
+        # Always JSON, never HTML
+        return jsonify({"ok": False, "error": f"{type(e).__name__}: {e}"}), 500
 
