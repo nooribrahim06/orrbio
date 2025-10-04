@@ -381,8 +381,186 @@ section{padding:120px 20px 80px;max-width:1200px;margin:0 auto;}
 .planet-1{width:90px;height:90px;background:linear-gradient(135deg,var(--brand),var(--brand-2));top:18%;left:12%;opacity:.75;animation:float 6.5s ease-in-out infinite;}
 .planet-2{width:60px;height:60px;background:linear-gradient(135deg,var(--accent-2),#b98a55);top:30%;right:14%;opacity:.75;animation:float 7.2s ease-in-out 1.2s infinite;}
 .planet-3{width:72px;height:72px;background:linear-gradient(135deg,var(--accent-1),var(--brand-2));bottom:18%;left:20%;opacity:.75;animation:float 7.8s ease-in-out .4s infinite;}
-.ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--ring);transform:scale(1.35);animation:spin 16s linear infinite;pointer-events:none;}
-@keyframes spin{to{transform:scale(1.35) rotate(360deg)}}
+
+
+:root {
+  --orbit-stroke: rgba(154,231,255,.35);   /* rim color (icy blue) */
+  --orbit-glow:   rgba(55,163,140,.25);    /* subtle glow */
+}
+
+/* container */
+.hero {
+  position: relative;
+  padding: clamp(64px,12vh,160px) 0;
+  text-align: center;
+  isolation: isolate; /* ensures orbit stays behind */
+}
+.hero > * { position: relative; z-index: 1; }
+
+/* spinning ellipse background */
+.orbit-bg::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(120vmin,1100px);   /* wide ellipse */
+  height: min(70vmin,640px);
+  transform: translate(-50%,-50%) rotate(18deg);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+
+  /* thin ring + inner glow */
+  background:
+    radial-gradient(closest-side,
+      transparent calc(100% - 2px),
+      var(--orbit-stroke) calc(100% - 1px) 100%),
+    radial-gradient(closest-side,
+      var(--orbit-glow) 0 60%, transparent 70%);
+  filter: drop-shadow(0 0 12px rgba(55,163,140,.25));
+  animation: orbit-spin 70s linear infinite;
+  opacity: .75;
+}
+
+/* faint secondary orbit for depth */
+.orbit-bg::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(145vmin,1320px);
+  height: min(85vmin,760px);
+  transform: translate(-50%,-50%) rotate(-12deg);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    radial-gradient(closest-side,
+      transparent calc(100% - 2px),
+      rgba(255,255,255,.18) calc(100% - 1px) 100%);
+  filter: blur(.3px);
+  animation: orbit-spin 110s linear infinite reverse;
+  opacity: .35;
+}
+
+@keyframes orbit-spin {
+  to { transform: translate(-50%,-50%) rotate(378deg); }
+}
+
+/* hero title on top */
+.hero-title{
+  font-family:"Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+  font-weight:800;
+  letter-spacing:-0.01em;
+}
+
+
+
+/* ===== Saturn palette (use your tokens if you want) ===== */
+:root{
+  --sat-ring1: rgba(154,231,255,.55);
+  --sat-ring2: rgba(55,163,140,.35);
+  --sat-ring3: rgba(255,210,74,.18);
+  --sat-glow:  rgba(154,231,255,.12);
+}
+
+/* keep hero stacking sane */
+.hero { isolation:isolate; }
+.hero .hero-title, .hero .buttons, .hero .eyebrow, .hero .type-line { position:relative; z-index:3; }
+
+/* shrink the whole saturn group so it just grazes the text */
+.saturn{
+  width:min(95vmin,900px);
+  height:min(52vmin,480px);
+  opacity:.65;                 /* lower global presence */
+  animation-duration:180s;     /* a touch slower */
+}
+
+/* make ring strokes thicker + less opaque */
+.saturn::before,
+.saturn::after{
+  /* thicker band: widen the last ~28px of the ellipse */
+  background:
+    radial-gradient(ellipse at center,
+      transparent 0 calc(100% - 28px),
+      rgba(154,231,255,.45) calc(100% - 28px) calc(100% - 22px),
+      rgba(55,163,140,.28)  calc(100% - 22px) calc(100% - 14px),
+      rgba(255,210,74,.12)  calc(100% - 14px) calc(100% - 6px),
+      transparent           calc(100% - 6px)  100%);
+  filter: drop-shadow(0 0 14px rgba(154,231,255,.15));
+}
+
+.saturn::after{
+  height:60%;                  /* thinner front slice */
+  opacity:.85;                 /* slightly subdued */
+}
+
+/* planet a bit dimmer so text pops */
+.saturn .planet{ opacity:.8; }
+
+  /* fade ends so it feels elliptical */
+  mask: linear-gradient(#0000, #000 25% 75%, #0000);
+
+/* ===== Tiny moons / meteors ===== */
+.orbitors{ position:absolute; inset:0; z-index:5; animation: saturn-drift 60s linear infinite reverse; }
+.orbitors span{
+  --size: var(--s,6px);
+  position:absolute; left:50%; top:50%;
+  width:var(--size); height:var(--size); margin:calc(var(--size) * -0.5);
+  border-radius:50%;
+  background:
+    radial-gradient(closest-side, #fff, #fff0 70%),
+    radial-gradient(closest-side, rgba(154,231,255,.8), #fff0 60%);
+  box-shadow: 0 0 14px rgba(154,231,255,.9), 0 0 4px #fff;
+  transform-origin: 0 0;
+  transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
+  animation: moon 12s linear infinite;
+  opacity:.9;
+}
+@keyframes moon{
+  to{ transform: rotate(calc(var(--a) + 360deg)) translateX(var(--r)) rotate(calc(-1 * var(--a) - 360deg)); }
+}
+@keyframes saturn-drift{ to{ transform: rotate(378deg); } }
+
+
+
+/* base layer positions */
+.bubbles{
+  position:absolute; inset:0; pointer-events:none;
+}
+.bubbles.back{ z-index:2; }     /* behind text */
+.bubbles.front{ z-index:6; }    /* IN FRONT of text */
+
+/* bubble styling + motion */
+.bubbles span{
+  position:absolute;
+  left:var(--x); top:var(--y);
+  width:var(--s); height:var(--s);
+  border-radius:50%;
+  background:
+    radial-gradient(closest-side, #ffffff, #ffffff00 70%),
+    radial-gradient(closest-side, rgba(154,231,255,.9), #ffffff00 60%);
+  box-shadow: 0 0 18px rgba(154,231,255,.6), 0 0 4px #fff;
+  filter: blur(var(--blur));
+  animation:
+    floatY var(--d) ease-in-out infinite,
+    driftX calc(var(--d) * 1.2) linear infinite;
+  opacity:.65;                 /* soft so text dominates */
+  transform: translateZ(0);
+}
+
+/* gentle up/down and side drift */
+@keyframes floatY{
+  0%,100%{ transform: translateY(-8px) }
+  50%    { transform: translateY(10px) }
+}
+@keyframes driftX{
+  0%  { margin-left:-6px; }
+  50% { margin-left: 6px; }
+  100%{ margin-left:-6px; }
+}
+
+
+
 
 /* Services / Cards (Safety & Investment) */
 .services, .satellites{background:linear-gradient(to bottom,#0b1119,#101826);padding-bottom:80px;}

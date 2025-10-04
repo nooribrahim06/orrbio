@@ -3,10 +3,29 @@
 {% block title %}Orbio - Explore The Cosmos{% endblock %}
 
 {% block content %}
-<section id="home" class="hero" style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding-top:120px;">
+<section id="home" class="hero orbit-bg" style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding-top:120px;">
   <div class="hero-inner" style="max-width:960px;margin:auto;position:relative">
+
+
+    <!-- behind-text bubbles -->
+<div class="bubbles back" aria-hidden="true">
+  <span style="--x:12%; --s:14px; --d:12s; --y:6%;  --blur:1px;"></span>
+  <span style="--x:78%; --s:10px; --d:16s; --y:18%; --blur:2px;"></span>
+  <span style="--x:35%; --s:8px;  --d:14s; --y:28%; --blur:1px;"></span>
+</div>
+
+<!-- front bubbles (will float OVER the headline/buttons) -->
+<div class="bubbles front" aria-hidden="true">
+  <span style="--x:22%; --s:16px; --d:18s; --y:40%; --blur:0px;"></span>
+  <span style="--x:60%; --s:12px; --d:20s; --y:50%; --blur:0px;"></span>
+  <span style="--x:82%; --s:9px;  --d:15s; --y:32%; --blur:0px;"></span>
+</div>
+
+
+
     <span class="eyebrow">ORBIT. BUILD. INNOVATE.</span>
     <h1>Buisness beyond orbits, Impact beyond space</h1>
+    <h1 class="hero-title">Buisness beyond orbits, Impact beyond space</h1>
     <div id="typeTarget" class="type-line" aria-live="polite"></div>
 
     <div class="buttons">
@@ -20,7 +39,19 @@
     <div class="floating-planet planet-1" data-depth="0.06"></div>
     <div class="floating-planet planet-2" data-depth="0.09"></div>
     <div class="floating-planet planet-3" data-depth="0.05"></div>
-    <div class="ring"></div>
+
+    <!-- SATURN GROUP (behind text) -->
+    <div class="saturn" aria-hidden="true">
+    <div class="planet"></div>
+    <div class="orbitors">
+      <span style="--a:0deg;--r:46%;--s:6px;"></span>
+      <span style="--a:72deg;--r:54%;--s:8px;"></span>
+      <span style="--a:148deg;--r:50%;--s:5px;"></span>
+      <span style="--a:228deg;--r:57%;--s:7px;"></span>
+      <span style="--a:305deg;--r:52%;--s:4px;"></span>
+    </div>
+    </div>
+
   </div>
 </section>
 
@@ -101,7 +132,8 @@ const messages = [
   "✨ Feature 1: Safety tool to calculate collision percent.",
   "👤 Feature 2: Book your slots in LEO and calculate the ROI.",
   "🎁 Feature 3: Raising awareness about LEO.",
-  "💬 Feature 4: A coming soon small game!"
+  "🎮 Feature 4: An Orbio Adventure game!",
+  "💬 Feature 5: Tomorrow: we are having VR experience for students and AI based ROI calculator"
 ];
 
 let index = 0;
